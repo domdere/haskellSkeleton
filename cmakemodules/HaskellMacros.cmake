@@ -30,12 +30,22 @@ MACRO ( GET_RELOCATABLE_LIBRARY_NAME input outputVar)
     ENDIF ( WIN32 )
 ENDMACRO ( GET_RELOCATABLE_LIBRARY_NAME )
 
+MACRO ( ADD_PATH pathStr var )
+
+    SET (${var} )
+
+    FOREACH ( srcFile ${ARGN} )
+        SET (${var} ${${var}} "${pathStr}/${srcFile}")
+    ENDFOREACH ( srcFile srcFiles )
+
+ENDMACRO ( ADD_PATH var )
+
 MACRO ( ADD_SRC_PATH var )
 
     SET (${var} )
 
     FOREACH ( srcFile ${ARGN} )
-        SET (${var} ${var} "${ROOT_SRC_DIR}/${srcFile}")
+        SET (${var} ${${var}} "${ROOT_SRC_DIR}/${srcFile}")
     ENDFOREACH ( srcFile srcFiles )
 
 ENDMACRO ( ADD_SRC_PATH var )
@@ -53,13 +63,13 @@ ENDMACRO ( ADD_BIN_PATH var )
 
 MACRO ( BUILD_WITH_CABAL projectName projectOutput )
 
-    ADD_SRC_PATH ( SRC_DEPENDS ${ARGN})
+    ADD_PATH ( "${ROOT_SRC_DIR}/${projectName}" SRC_DEPENDS ${ARGN})
 
     IF ( HASKELL_MACRO_DEBUG )
         MESSAGE ( STATUS "Setting up cabal target:" )
         MESSAGE ( STATUS "  --Project Name: ${projectName}" )
         MESSAGE ( STATUS "  --Target Output: ${projectOutput}" )
-        MESSAGE ( STATUS "  --Dependencies: ${ARGN}" )
+        MESSAGE ( STATUS "  --Dependencies: ${SRC_DEPENDS}" )
     ENDIF ( HASKELL_MACRO_DEBUG )
 
     ADD_CUSTOM_COMMAND (
@@ -67,7 +77,7 @@ MACRO ( BUILD_WITH_CABAL projectName projectOutput )
         COMMAND "${CABAL_EXECUTABLE}"
         ARGS "install"
             "--prefix" "${ROOT_BIN_DIR}/${projectName}"
-        DEPENDS ${ARGN}
+        DEPENDS "${SRC_DEPENDS}"
         WORKING_DIRECTORY "${ROOT_SRC_DIR}/${projectName}" )
 
     SET ( SRC_DEPENDS )
@@ -87,11 +97,11 @@ MACRO ( ADD_HASKELL_EXECUTABLE_TARGET projectName )
     ENDIF ( HASKELL_MACRO_DEBUG )
 
     BUILD_WITH_CABAL ( ${projectName} 
-        ${${projectName}_EXECUTABLE} 
+        ${${projectName}_EXECUTABLE}
         ${ARGN} )
 
-    ADD_CUSTOM_TARGET ( ${projectName} ALL DEPENDS
-        "${${projectName}_EXECUTABLE}" )
+    ADD_CUSTOM_TARGET ( ${projectName} ALL 
+        DEPENDS "${${projectName}_EXECUTABLE}" )
 
 ENDMACRO ( ADD_HASKELL_EXECUTABLE_TARGET )
 
