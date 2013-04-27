@@ -14,6 +14,12 @@
 #  GHCI_VERSION_MAJOR
 #  GHCI_VERSION_MINOR
 #  GHCI_VERSION_PATCH
+#  CABAL_EXECUTION
+#  CABAL_FOUND
+#  CABAL_VERSION
+#  CABAL_VERSION_MAJOR
+#  CABAL_VERSION_MINOR
+#  CABAL_VERSION_PATCH
 
 FIND_PROGRAM(GHC_EXECUTABLE ghc
   HINTS
@@ -31,18 +37,29 @@ FIND_PROGRAM(GHCI_EXECUTABLE ghci
   /usr/bin
 )
 
+FIND_PROGRAM(CABAL_EXECUTABLE cabal
+  HINTS
+  $ENV{HASKELL_DIR}
+  #PATH_SUFFIXES bin
+  PATHS
+  /usr/bin
+)
+
+
 OPTION (HASKELL_DEBUG "Debug mode for the CMake FindHaskell module." OFF)
 
 IF ( HASKELL_DEBUG )
     MESSAGE ( STATUS "Haskell Compiler: ${GHC_EXECUTABLE}" )
     MESSAGE ( STATUS "Haskell Interpreter: ${GHCI_EXECUTABLE}" )
+    MESSAGE ( STATUS "Cabal Build System: ${CABAL_EXECUTABLE}" )
 ENDIF ( HASKELL_DEBUG )
 
 INCLUDE( FindPackageHandleStandardArgs )
 FIND_PACKAGE_HANDLE_STANDARD_ARGS( GHC DEFAULT_MSG GHC_EXECUTABLE )
 FIND_PACKAGE_HANDLE_STANDARD_ARGS( GHCI DEFAULT_MSG GHCI_EXECUTABLE )
+FIND_PACKAGE_HANDLE_STANDARD_ARGS( CABAL DEFAULT_MSG CABAL_EXECUTABLE )
 
-MARK_AS_ADVANCED(GHC_EXECUTABLE GHCI_EXECUTABLE)
+MARK_AS_ADVANCED( GHC_EXECUTABLE GHCI_EXECUTABLE CABAL_EXECUTABLE )
 
 # if either of them were found, determine the version, 
 # (ideally they ought to be the same...)
@@ -75,6 +92,34 @@ MACRO (GET_HASKELL_VERSION haskell )
 
 ENDMACRO (GET_HASKELL_VERSION )
 
+MACRO (GET_CABAL_VERSION )
+    EXECUTE_PROCESS (
+        COMMAND "${CABAL_EXECUTABLE}" --version
+        OUTPUT_VARIABLE  CABAL_VERSION__
+        RESULT_VARIABLE  CABAL_VERSION_RESULT__
+        ERROR_QUIET )
+
+    IF ( NOT CABAL_VERSION_RESULT__)
+        # if the result was False/0 it means there was no error
+        # and we have the version output in ${HASKELL}_VERSION__
+        # and we just have to parse it out.
+
+        IF ( HASKELL_DEBUG )
+            MESSAGE ( STATUS "${CABAL_EXECUTABLE} --version -> '${CABAL_VERSION__}'" )
+        ENDIF ( HASKELL_DEBUG )
+         
+        STRING ( REGEX REPLACE ".*using version ([0-9]+)\\.[0-9]+\\.[0-9]+ of the Cabal library.*" "\\1" CABAL_VERSION_MAJOR "${CABAL_VERSION__}" )
+
+        STRING ( REGEX REPLACE ".*using version [0-9]+\\.([0-9]+)\\.[0-9]+ of the Cabal library.*" "\\1" CABAL_VERSION_MINOR "${CABAL_VERSION__}" )
+
+        STRING ( REGEX REPLACE ".*using version [0-9]+\\.[0-9]+\\.([0-9]+) of the Cabal library.*" "\\1" CABAL_VERSION_PATCH "${CABAL_VERSION__}" )
+
+        STRING ( REGEX REPLACE ".*using version ([\\.0-9^\\n]+) of the Cabal library.*" "\\1" CABAL_VERSION "${CABAL_VERSION__}" )
+
+    ENDIF ( NOT CABAL_VERSION_RESULT__)
+
+ENDMACRO (GET_CABAL_VERSION )
+
 IF ( GHC_FOUND )
     IF ( HASKELL_DEBUG )
         MESSAGE ( STATUS "Attempting to find version for ghc.." )
@@ -98,3 +143,16 @@ IF ( GHCI_FOUND )
         MESSAGE ( STATUS "ghci version determined to be: ${GHCI_VERSION}" )
     ENDIF ( GHCI_VERSION )
 ENDIF ( GHCI_FOUND )
+
+IF ( CABAL_FOUND )
+    IF ( HASKELL_DEBUG )
+        MESSAGE ( STATUS "Attempting to find version for cabal.." )
+    ENDIF ( HASKELL_DEBUG )
+
+    GET_CABAL_VERSION()
+
+    IF ( CABAL_VERSION )
+        MESSAGE ( STATUS "cabal version determined to be: ${CABAL_VERSION}")
+    ENDIF ( CABAL_VERSION )
+
+ENDIF ( CABAL_FOUND )
