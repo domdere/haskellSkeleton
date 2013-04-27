@@ -4,3 +4,6 @@
 *.hi
 
 *.log
+
+#potential build files:
+*/data

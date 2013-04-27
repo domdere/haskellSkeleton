@@ -174,4 +174,5 @@ INCLUDE( HaskellMacros )
 
 # Sub Projects:
 #ADD_SUBPROJECT(sampleBinaryProject)
+ADD_SUBPROJECT(testMain)
 
