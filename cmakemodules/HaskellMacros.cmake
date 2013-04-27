@@ -90,7 +90,7 @@ MACRO ( ADD_HASKELL_EXECUTABLE_TARGET projectName )
         MESSAGE ( STATUS "Attempting to add executable project: ${projectName}" )
     ENDIF ( HASKELL_MACRO_DEBUG )
 
-    GET_EXECUTABLE_NAME ( "${ROOT_BIN_DIR}/${projectName}" ${projectName}_EXECUTABLE )
+    GET_EXECUTABLE_NAME ( "${ROOT_BIN_DIR}/${projectName}/bin/${projectName}" ${projectName}_EXECUTABLE )
 
     IF ( HASKELL_MACRO_DEBUG )
         MESSAGE ( STATUS "Trying to create rule to make ${${projectName}_EXECUTABLE}" )
