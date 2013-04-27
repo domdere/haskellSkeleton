@@ -1,0 +1,15 @@
+{
+    "name": "testMain",
+    "version": 0.1.0.0,
+    "synopsis": "testproj",
+    "homepage": "http://nothing.com"
+    "license": "MIT",
+    "author": "Author",
+    "maintainer": "author@email.com",
+    "category": "Text",
+    "build-type": "Simple",
+    "main-is": "main.hs",
+    "link-library-dirs": [],
+    "link-libraries": [],
+    "build-depends": "base ==4.6.*" 
+}
