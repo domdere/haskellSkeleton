@@ -63,7 +63,7 @@ ENDMACRO ( ADD_BIN_PATH var )
 
 MACRO ( BUILD_WITH_CABAL projectName projectOutput )
 
-    ADD_PATH ( "${ROOT_SRC_DIR}/${projectName}" SRC_DEPENDS ${ARGN})
+    ADD_PATH ( "${ROOT_BIN_DIR}/${projectName}" SRC_DEPENDS ${ARGN})
 
     IF ( HASKELL_MACRO_DEBUG )
         MESSAGE ( STATUS "Setting up cabal target:" )
@@ -76,13 +76,46 @@ MACRO ( BUILD_WITH_CABAL projectName projectOutput )
         OUTPUT ${projectOutput}
         COMMAND "${CABAL_EXECUTABLE}"
         ARGS "install"
-            "--prefix" "${ROOT_BIN_DIR}/${projectName}"
         DEPENDS "${SRC_DEPENDS}"
-        WORKING_DIRECTORY "${ROOT_SRC_DIR}/${projectName}" )
-
+        WORKING_DIRECTORY "${ROOT_BIN_DIR}/${projectName}" )
     SET ( SRC_DEPENDS )
 
 ENDMACRO ( BUILD_WITH_CABAL )
+
+MACRO ( COPY_FILES src dest )
+
+    ADD_CUSTOM_COMMAND (
+        OUTPUT "${dest}/${filename}"
+        COMMAND "cp"
+        ARGS "-v"
+            "${ARGN}" "${dest}"
+        DEPENDS "${ARGN}"
+        WORKING_DIRECTORY "${src}" )
+
+ENDMACRO ( COPY_FILES src dest )
+
+MACRO ( COPY_FILES_SRC_TO_BIN projectName)
+
+    ADD_SRC_PATH ( ${projectName}_WITH_SRC_PATH )
+    
+    FOREACH (filename ${ARGN} )
+
+        IF ( HASKELL_MACRO_DEBUG )
+            MESSAGE ( STATUS "Adding target to create ${ROOT_BIN_DIR}/${projectName}/${filename} from ${ROOT_SRC_DIR}/${projectName}/${filename}" )
+        ENDIF ( HASKELL_MACRO_DEBUG )
+
+        ADD_CUSTOM_COMMAND (
+            OUTPUT "${ROOT_BIN_DIR}/${projectName}/${filename}"
+            COMMAND "cp"
+            ARGS "-v"
+                "${filename}" "${ROOT_BIN_DIR}/${projectName}/${filename}"
+            DEPENDS "${ROOT_SRC_DIR}/${projectName}/${filename}"
+            WORKING_DIRECTORY "${ROOT_SRC_DIR}/${projectName}" )
+
+    ENDFOREACH (filename ${ARGN} )
+
+ENDMACRO ( COPY_FILES_SRC_TO_BIN projectName)
+
 
 MACRO ( ADD_HASKELL_EXECUTABLE_TARGET projectName )
 
@@ -95,6 +128,10 @@ MACRO ( ADD_HASKELL_EXECUTABLE_TARGET projectName )
     IF ( HASKELL_MACRO_DEBUG )
         MESSAGE ( STATUS "Trying to create rule to make ${${projectName}_EXECUTABLE}" )
     ENDIF ( HASKELL_MACRO_DEBUG )
+
+    ADD_SRC_PATH ( ${projectName}_SOURCES ${ARGN} )
+
+    COPY_FILES_SRC_TO_BIN ( ${projectName} ${ARGN} )
 
     BUILD_WITH_CABAL ( ${projectName} 
         ${${projectName}_EXECUTABLE}
