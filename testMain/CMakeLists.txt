@@ -1,4 +1,6 @@
 ADD_HASKELL_EXECUTABLE_TARGET ( testMain
     "main.hs" )
 
+ADD_LICENCE_TARGET (testMain "MIT-LICENSE")
+
 ADD_DEPENDENCIES ( testMain TestLib )

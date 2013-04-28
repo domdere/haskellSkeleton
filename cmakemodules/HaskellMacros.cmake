@@ -76,6 +76,7 @@ MACRO ( BUILD_WITH_CABAL projectName projectOutput )
         OUTPUT ${projectOutput}
         COMMAND "${CABAL_EXECUTABLE}"
         ARGS "install"
+            "--prefix" "${ROOT_BIN_DIR}/${projectName}"
         DEPENDS "${SRC_DEPENDS}"
         WORKING_DIRECTORY "${ROOT_BIN_DIR}/${projectName}" )
     SET ( SRC_DEPENDS )
@@ -140,6 +141,8 @@ MACRO ( ADD_HASKELL_EXECUTABLE_TARGET projectName )
     ADD_CUSTOM_TARGET ( ${projectName} ALL 
         DEPENDS "${${projectName}_EXECUTABLE}" )
 
+    ADD_README_TARGET ( ${projectName} )
+
 ENDMACRO ( ADD_HASKELL_EXECUTABLE_TARGET )
 
 MACRO ( ADD_HASKELL_LIBRARY projectName )
@@ -156,3 +159,38 @@ MACRO ( ADD_HASKELL_LIBRARY projectName )
 
 ENDMACRO ( ADD_HASKELL_LIBRARY projectNames )
 
+MACRO ( ADD_LICENCE_TARGET projectName license )
+
+    ADD_CUSTOM_COMMAND (
+        OUTPUT "${ROOT_BIN_DIR}/${projectName}/LICENSE"
+        COMMAND "cp"
+        ARGS "-v"
+            "${license}" "${ROOT_BIN_DIR}/${projectName}/LICENSE"
+        DEPENDS "${ROOT_SRC_DIR}/Licences/${license}"
+        WORKING_DIRECTORY "${ROOT_SRC_DIR}/Licences" )
+
+    ADD_CUSTOM_TARGET ( ${projectName}-license ALL 
+        DEPENDS "${ROOT_BIN_DIR}/${projectName}/LICENSE" )
+
+    ADD_DEPENDENCIES ( ${projectName} ${projectName}-license )
+
+
+ENDMACRO ( ADD_LICENCE_TARGET projectName license )
+
+MACRO ( ADD_README_TARGET projectName )
+
+    ADD_CUSTOM_COMMAND (
+        OUTPUT "${ROOT_BIN_DIR}/${projectName}/README"
+        COMMAND "cp"
+        ARGS "-v"
+            "README" "${ROOT_BIN_DIR}/${projectName}/README"
+        DEPENDS "${ROOT_SRC_DIR}/${projectName}/README"
+        WORKING_DIRECTORY "${ROOT_SRC_DIR}/${projectName}" )
+
+    ADD_CUSTOM_TARGET ( ${projectName}-readme ALL 
+        DEPENDS "${ROOT_BIN_DIR}/${projectName}/README" )
+
+    ADD_DEPENDENCIES ( ${projectName} ${projectName}-readme )
+
+
+ENDMACRO ( ADD_README_TARGET projectName )
