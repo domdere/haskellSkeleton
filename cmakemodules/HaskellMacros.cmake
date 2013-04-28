@@ -142,6 +142,17 @@ MACRO ( ADD_HASKELL_EXECUTABLE_TARGET projectName )
 
 ENDMACRO ( ADD_HASKELL_EXECUTABLE_TARGET )
 
-MACRO ( HASKELL_LIBRARY srcFiles )
-ENDMACRO ( HASKELL_LIBRARY srcFiles )
+MACRO ( ADD_HASKELL_LIBRARY projectName )
+    IF ( HASKELL_MACRO_DEBUG )
+        MESSAGE ( STATUS "Attempting to add haskell library/module: ${projectName}" )
+    ENDIF ( HASKELL_MACRO_DEBUG )
+
+    ADD_PATH ( "${ROOT_BIN_DIR}/${projectName}" ${projectName}_DEPENDS ${ARGN})
+
+    COPY_FILES_SRC_TO_BIN ( ${projectName} ${ARGN} )
+
+    ADD_CUSTOM_TARGET ( ${projectName} ALL 
+        DEPENDS "${${projectName}_DEPENDS}" )
+
+ENDMACRO ( ADD_HASKELL_LIBRARY projectNames )
 
