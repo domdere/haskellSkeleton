@@ -5,5 +5,8 @@
 
 *.log
 
-#potential build files:
-*/data
+# Python compiled bytecode
+*.pyc
+
+# potential build files:
+data/

@@ -1,8 +1,8 @@
 {
     "name": "testMain",
-    "version": 0.1.0.0,
+    "version": "0.1.0.0",
     "synopsis": "testproj",
-    "homepage": "http://nothing.com"
+    "homepage": "http://nothing.com",
     "license": "MIT",
     "author": "Author",
     "maintainer": "author@email.com",
