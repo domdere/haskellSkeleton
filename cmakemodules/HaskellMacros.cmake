@@ -134,12 +134,15 @@ MACRO ( ADD_HASKELL_EXECUTABLE_TARGET projectName )
 
     COPY_FILES_SRC_TO_BIN ( ${projectName} ${ARGN} )
 
+    CABAL_TARGET ( ${projectName} )
+
     BUILD_WITH_CABAL ( ${projectName} 
         ${${projectName}_EXECUTABLE}
         ${ARGN} )
 
     ADD_CUSTOM_TARGET ( ${projectName} ALL 
-        DEPENDS "${${projectName}_EXECUTABLE}" )
+        DEPENDS "${${projectName}_EXECUTABLE}"
+            "${ROOT_BIN_DIR}/${projectName}/${projectName}.cabal" )
 
     ADD_README_TARGET ( ${projectName} )
 
@@ -158,6 +161,19 @@ MACRO ( ADD_HASKELL_LIBRARY projectName )
         DEPENDS "${${projectName}_DEPENDS}" )
 
 ENDMACRO ( ADD_HASKELL_LIBRARY projectNames )
+
+MACRO ( CABAL_TARGET projectName )
+
+    ADD_CUSTOM_COMMAND ( 
+        OUTPUT "${ROOT_BIN_DIR}/${projectName}/${projectName}.cabal"
+        COMMAND "${PYTHON_EXECUTABLE}"
+        ARGS "generateCabal.py"
+            "${ROOT_SRC_DIR}/${projectName}/package.json"
+            "${ROOT_BIN_DIR}/${projectName}/${projectName}.cabal"
+        DEPENDS "${ROOT_SRC_DIR}/build-scripts/generateCabal.py"
+        WORKING_DIRECTORY "${ROOT_SRC_DIR}/build-scripts/" )
+
+ENDMACRO ( CABAL_TARGET projectName )
 
 MACRO ( ADD_LICENCE_TARGET projectName license )
 
@@ -191,6 +207,5 @@ MACRO ( ADD_README_TARGET projectName )
         DEPENDS "${ROOT_BIN_DIR}/${projectName}/README" )
 
     ADD_DEPENDENCIES ( ${projectName} ${projectName}-readme )
-
 
 ENDMACRO ( ADD_README_TARGET projectName )
