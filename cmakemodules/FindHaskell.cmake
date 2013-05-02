@@ -136,6 +136,35 @@ MACRO (GET_CABAL_VERSION )
 
 ENDMACRO (GET_CABAL_VERSION )
 
+MACRO (GET_HADDOCK_VERSION )
+    EXECUTE_PROCESS (
+        COMMAND "${HADDOCK_EXECUTABLE}" --version
+        OUTPUT_VARIABLE  HADDOCK_VERSION__
+        RESULT_VARIABLE  HADDOCK_VERSION_RESULT__
+        ERROR_QUIET )
+
+    IF ( NOT HADDOCK_VERSION_RESULT__)
+        # if the result was False/0 it means there was no error
+        # and we have the version output in HADDOCK_VERSION__
+        # and we just have to parse it out.
+
+        IF ( HASKELL_DEBUG )
+            MESSAGE ( STATUS "${HADDOCK_EXECUTABLE} --version -> '${HADDOCK_VERSION__}'" )
+        ENDIF ( HASKELL_DEBUG )
+         
+        STRING ( REGEX REPLACE "^Haddock version ([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" HADDOCK_VERSION_MAJOR "${HADDOCK_VERSION__}" )
+
+        STRING ( REGEX REPLACE "^Haddock version [0-9]+\\.([0-9]+)\\.[0-9]+.*" "\\1" HADDOCK_VERSION_MINOR "${HADDOCK_VERSION__}" )
+
+        STRING ( REGEX REPLACE "^Haddock version [0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" HADDOCK_VERSION_PATCH "${HADDOCK_VERSION__}" )
+
+        STRING ( REGEX REPLACE "^Haddock version ([\\.0-9^\\n]+).*" "\\1" HADDOCK_VERSION "${HADDOCK_VERSION__}" )
+
+    ENDIF ( NOT HADDOCK_VERSION_RESULT__)
+
+ENDMACRO (GET_HADDOCK_VERSION )
+
+
 IF ( GHC_FOUND )
     IF ( HASKELL_DEBUG )
         MESSAGE ( STATUS "Attempting to find version for ghc.." )
@@ -172,3 +201,16 @@ IF ( CABAL_FOUND )
     ENDIF ( CABAL_VERSION )
 
 ENDIF ( CABAL_FOUND )
+
+IF ( HADDOCK_FOUND )
+    IF ( HASKELL_DEBUG )
+        MESSAGE ( STATUS "Attempting to find version for haddock.." )
+    ENDIF ( HASKELL_DEBUG )
+
+    GET_HADDOCK_VERSION()
+
+    IF ( HADDOCK_VERSION )
+        MESSAGE ( STATUS "haddock version determined to be: ${HADDOCK_VERSION}")
+    ENDIF ( HADDOCK_VERSION )
+
+ENDIF ( HADDOCK_FOUND )

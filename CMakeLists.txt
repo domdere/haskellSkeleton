@@ -87,6 +87,18 @@ MACRO ( DISPLAY_HASKELL_INFO )
         MESSAGE ( STATUS "Haskell Interpreter was NOT Found!" )
     ENDIF ( GHCI_FOUND )
 
+    IF ( CABAL_FOUND )
+        MESSAGE ( STATUS "Cabal (version ${CABAL_VERSION}) was found at: ${CABAL_EXECUTABLE}" )
+    ELSE ( CABAL_FOUND )
+        MESSAGE ( STATUS "Cabal was NOT Found!" )
+    ENDIF ( CABAL_FOUND )
+
+    IF ( HADDOCK_FOUND )
+        MESSAGE ( STATUS "Haddock (version ${HADDOCK_VERSION}) was found at: ${HADDOCK_EXECUTABLE}" )
+    ELSE ( HADDOCK_FOUND )
+        MESSAGE ( STATUS "Haddock was NOT Found!" )
+    ENDIF ( HADDOCK_FOUND )
+
 ENDMACRO ( DISPLAY_HASKELL_INFO )
 
 MACRO (DISPLAY_GIT_INFO )

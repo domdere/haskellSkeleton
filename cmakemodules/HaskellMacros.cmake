@@ -117,6 +117,19 @@ MACRO ( COPY_FILES_SRC_TO_BIN projectName)
 
 ENDMACRO ( COPY_FILES_SRC_TO_BIN projectName)
 
+MACRO ( ADD_DOCUMENTATION_TARGET projectName )
+
+    ADD_CUSTOM_TARGET (
+        ${projectName}-doc
+        COMMAND "${HADDOCK_EXECUTABLE}"
+            "-h"
+            -o "${ROOT_BIN_DIR}/${projectName}/doc/"
+            "${projectName}/main.hs"
+        DEPENDS ${projectName}
+        WORKING_DIRECTORY "${ROOT_BIN_DIR}" )
+
+ENDMACRO ( ADD_DOCUMENTATION_TARGET projectName )
+
 
 MACRO ( ADD_HASKELL_EXECUTABLE_TARGET projectName )
 
@@ -145,6 +158,8 @@ MACRO ( ADD_HASKELL_EXECUTABLE_TARGET projectName )
             "${ROOT_BIN_DIR}/${projectName}/${projectName}.cabal" )
 
     ADD_README_TARGET ( ${projectName} )
+
+    ADD_DOCUMENTATION_TARGET ( ${projectName} )
 
 ENDMACRO ( ADD_HASKELL_EXECUTABLE_TARGET )
 
