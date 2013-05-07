@@ -188,4 +188,4 @@ INCLUDE( HaskellMacros )
 #ADD_SUBPROJECT(sampleBinaryProject)
 ADD_SUBPROJECT(testMain)
 ADD_SUBPROJECT(TestLib)
-
+ADD_SUBPROJECT(TestCLib)

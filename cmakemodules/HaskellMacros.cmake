@@ -77,7 +77,7 @@ MACRO ( BUILD_WITH_CABAL projectName projectOutput )
         COMMAND "${CABAL_EXECUTABLE}"
         ARGS "install"
             "--prefix" "${ROOT_BIN_DIR}/${projectName}"
-        DEPENDS "${SRC_DEPENDS}"
+        DEPENDS "${SRC_DEPENDS}" "${ROOT_BIN_DIR}/${projectName}/${projectName}.cabal"
         WORKING_DIRECTORY "${ROOT_BIN_DIR}/${projectName}" )
     SET ( SRC_DEPENDS )
 
@@ -154,8 +154,7 @@ MACRO ( ADD_HASKELL_EXECUTABLE_TARGET projectName )
         ${ARGN} )
 
     ADD_CUSTOM_TARGET ( ${projectName} ALL 
-        DEPENDS "${${projectName}_EXECUTABLE}"
-            "${ROOT_BIN_DIR}/${projectName}/${projectName}.cabal" )
+        DEPENDS "${${projectName}_EXECUTABLE}" )
 
     ADD_README_TARGET ( ${projectName} )
 
