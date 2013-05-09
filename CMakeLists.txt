@@ -99,6 +99,13 @@ MACRO ( DISPLAY_HASKELL_INFO )
         MESSAGE ( STATUS "Haddock was NOT Found!" )
     ENDIF ( HADDOCK_FOUND )
 
+    IF ( HSC2HS_FOUND )
+        MESSAGE ( STATUS "hsc2hs (version ${HSC2HS_VERSION}) was found at: ${HSC2HS_EXECUTABLE}" )
+    ELSE ( HSC2HS_FOUND )
+        MESSAGE ( STATUS "hsc2hs was NOT Found!" )
+    ENDIF ( HSC2HS_FOUND )
+
+
 ENDMACRO ( DISPLAY_HASKELL_INFO )
 
 MACRO (DISPLAY_GIT_INFO )

@@ -32,7 +32,7 @@ ENDMACRO ( GET_RELOCATABLE_LIBRARY_NAME )
 
 MACRO ( ADD_PATH pathStr var )
 
-    SET (${var} )
+    SET ( ${var} )
 
     FOREACH ( srcFile ${ARGN} )
         SET (${var} ${${var}} "${pathStr}/${srcFile}")
@@ -72,12 +72,15 @@ MACRO ( BUILD_WITH_CABAL projectName projectOutput )
         MESSAGE ( STATUS "  --Dependencies: ${SRC_DEPENDS}" )
     ENDIF ( HASKELL_MACRO_DEBUG )
 
+    ADD_CUSTOM_TARGET ( ${projectName}-preprocessing
+        DEPENDS ${SRC_DEPENDS} )
+
     ADD_CUSTOM_COMMAND (
         OUTPUT ${projectOutput}
         COMMAND "${CABAL_EXECUTABLE}"
         ARGS "install"
             "--prefix" "${ROOT_BIN_DIR}/${projectName}"
-        DEPENDS "${SRC_DEPENDS}" "${ROOT_BIN_DIR}/${projectName}/${projectName}.cabal"
+        DEPENDS ${projectName}-preprocessing "${ROOT_BIN_DIR}/${projectName}/${projectName}.cabal"
         WORKING_DIRECTORY "${ROOT_BIN_DIR}/${projectName}" )
     SET ( SRC_DEPENDS )
 
@@ -169,10 +172,16 @@ MACRO ( ADD_HASKELL_LIBRARY projectName )
 
     ADD_PATH ( "${ROOT_BIN_DIR}/${projectName}" ${projectName}_DEPENDS ${ARGN})
 
+    IF ( HASKELL_MACRO_DEBUG )
+        MESSAGE ( STATUS "File Dependencies for ${projectName}: ${${projectName}_DEPENDS}" )
+    ENDIF ( HASKELL_MACRO_DEBUG )
+
     COPY_FILES_SRC_TO_BIN ( ${projectName} ${ARGN} )
 
+    ADD_CUSTOM_TARGET ( ${projectName}-preprocessing ALL DEPENDS )
+
     ADD_CUSTOM_TARGET ( ${projectName} ALL 
-        DEPENDS "${${projectName}_DEPENDS}" )
+        DEPENDS ${${projectName}_DEPENDS} ${projectName}-preprocessing )
 
 ENDMACRO ( ADD_HASKELL_LIBRARY projectNames )
 
@@ -223,3 +232,19 @@ MACRO ( ADD_README_TARGET projectName )
     ADD_DEPENDENCIES ( ${projectName} ${projectName}-readme )
 
 ENDMACRO ( ADD_README_TARGET projectName )
+
+MACRO ( ADD_HSC2HS_TARGET projectName hscFileSansExtension )
+
+    ADD_CUSTOM_COMMAND (
+        OUTPUT "${ROOT_BIN_DIR}/${projectName}/${hscFileSansExtension}.hs"
+        COMMAND "${HSC2HS_EXECUTABLE}"
+        ARGS "-o" "${ROOT_BIN_DIR}/${projectName}/${hscFileSansExtension}.hs"
+            "${projectName}/${hscFileSansExtension}.hsc"
+        DEPENDS "${ROOT_SRC_DIR}/${projectName}/${hscFileSansExtension}.hsc"
+        WORKING_DIRECTORY "${ROOT_SRC_DIR}" )
+        #COMMENT "Processing ${hscFileSansExtension}.hsc -> ${hscFileSansExtension}.hs" )
+
+    ADD_DEPENDENCIES ( ${projectName}-preprocessing
+        "${ROOT_BIN_DIR}/${projectName}/${hscFileSansExtension}.hs" )
+
+ENDMACRO ( ADD_HSC2HS_TARGET projectName hscFileSansExtension )
