@@ -1,2 +1,2 @@
-ADD_LIBRARY( TestCLib
+ADD_LIBRARY( TestCLib SHARED
     test.c test.h )

@@ -1,0 +1,2 @@
+ADD_HASKELL_LIBRARY (TestFFI
+    TestFFI.hs)
