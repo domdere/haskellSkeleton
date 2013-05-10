@@ -9,7 +9,7 @@
     "category": "Text",
     "build-type": "Simple",
     "main-is": "main.hs",
-    "link-library-dirs": [],
-    "link-libraries": [],
+    "link-library-dirs": ["../TestCLib"],
+    "link-libraries": ["TestCLib"],
     "build-depends": "base ==4.6.*" 
 }

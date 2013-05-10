@@ -3,4 +3,6 @@ ADD_HASKELL_EXECUTABLE_TARGET ( testMain
 
 ADD_LICENCE_TARGET (testMain "MIT-LICENSE")
 
-ADD_DEPENDENCIES ( testMain TestLib TestFFI )
+INSTALL_CPP_RELOCATABLE_LIBRARY ( "testMain" "TestCLib" )
+
+ADD_DEPENDENCIES ( testMain-executable TestLib TestFFI )
