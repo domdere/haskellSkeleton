@@ -178,10 +178,8 @@ MACRO ( ADD_HASKELL_LIBRARY projectName )
 
     COPY_FILES_SRC_TO_BIN ( ${projectName} ${ARGN} )
 
-    ADD_CUSTOM_TARGET ( ${projectName}-preprocessing ALL DEPENDS )
-
     ADD_CUSTOM_TARGET ( ${projectName} ALL 
-        DEPENDS ${${projectName}_DEPENDS} ${projectName}-preprocessing )
+        DEPENDS ${${projectName}_DEPENDS} )
 
 ENDMACRO ( ADD_HASKELL_LIBRARY projectNames )
 
@@ -238,13 +236,17 @@ MACRO ( ADD_HSC2HS_TARGET projectName hscFileSansExtension )
     ADD_CUSTOM_COMMAND (
         OUTPUT "${ROOT_BIN_DIR}/${projectName}/${hscFileSansExtension}.hs"
         COMMAND "${HSC2HS_EXECUTABLE}"
-        ARGS "-o" "${ROOT_BIN_DIR}/${projectName}/${hscFileSansExtension}.hs"
+        ARGS "-I${ROOT_SRC_DIR}" 
+            "-o" "${ROOT_BIN_DIR}/${projectName}/${hscFileSansExtension}.hs"
             "${projectName}/${hscFileSansExtension}.hsc"
-        DEPENDS "${ROOT_SRC_DIR}/${projectName}/${hscFileSansExtension}.hsc"
-        WORKING_DIRECTORY "${ROOT_SRC_DIR}" )
-        #COMMENT "Processing ${hscFileSansExtension}.hsc -> ${hscFileSansExtension}.hs" )
+        DEPENDS "${ROOT_BIN_DIR}/${projectName}/${hscFileSansExtension}.hsc"
+        WORKING_DIRECTORY "${ROOT_BIN_DIR}" 
+        COMMENT "Preprocessing ${hscFileSansExtension}.hsc -> ${hscFileSansExtension}.hs" )
 
-    ADD_DEPENDENCIES ( ${projectName}-preprocessing
-        "${ROOT_BIN_DIR}/${projectName}/${hscFileSansExtension}.hs" )
+    ADD_CUSTOM_TARGET ( ${projectName}-${hscFileSansExtension} ALL 
+        DEPENDS "${ROOT_BIN_DIR}/${projectName}/${hscFileSansExtension}.hs" )
+
+    ADD_DEPENDENCIES ( ${projectName} 
+        ${projectName}-${hscFileSansExtension} )
 
 ENDMACRO ( ADD_HSC2HS_TARGET projectName hscFileSansExtension )
