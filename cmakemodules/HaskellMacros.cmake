@@ -188,10 +188,16 @@ ENDMACRO ( ADD_HASKELL_LIBRARY projectNames )
 
 MACRO ( CABAL_TARGET projectName )
 
+    IF ( UNIX )
+        # Tells the binary to search in its own directory for shared libs
+        SET ( ${projectName}_GHCOPT "-optl-Wl,-rpath,\\'$$ORIGIN\\'" )
+    ENDIF ( UNIX )
+
     ADD_CUSTOM_COMMAND ( 
         OUTPUT "${ROOT_BIN_DIR}/${projectName}/${projectName}.cabal"
         COMMAND "${PYTHON_EXECUTABLE}"
         ARGS "generateCabal.py"
+            "--ghc-options" "${${projectName}_GHCOPT}"
             "${ROOT_SRC_DIR}/${projectName}/package.json"
             "${ROOT_BIN_DIR}/${projectName}/${projectName}.cabal"
         DEPENDS "${ROOT_SRC_DIR}/build-scripts/generateCabal.py"
@@ -273,7 +279,8 @@ MACRO ( INSTALL_CPP_RELOCATABLE_LIBRARY projectName library )
         COMMENT "Installing library ${${library}_NAME} for ${projectName}" )
 
     ADD_CUSTOM_TARGET ( ${projectName}-${library} ALL 
-        DEPENDS ${projectName}-executable )
+        DEPENDS ${projectName}-executable
+            "${ROOT_BIN_DIR}/${projectName}/bin/${${library}_NAME}" )
 
     ADD_DEPENDENCIES ( ${projectName} 
         ${projectName}-${library} )
