@@ -190,14 +190,14 @@ MACRO ( CABAL_TARGET projectName )
 
     IF ( UNIX )
         # Tells the binary to search in its own directory for shared libs
-        SET ( ${projectName}_GHCOPT "-optl-Wl,-rpath,\\'$$ORIGIN\\'" )
+        SET ( ${projectName}_SYSTEMOPT "--unix" )
     ENDIF ( UNIX )
 
     ADD_CUSTOM_COMMAND ( 
         OUTPUT "${ROOT_BIN_DIR}/${projectName}/${projectName}.cabal"
         COMMAND "${PYTHON_EXECUTABLE}"
         ARGS "generateCabal.py"
-            "--ghc-options" "${${projectName}_GHCOPT}"
+            "${${projectName}_SYSTEMOPT}"
             "${ROOT_SRC_DIR}/${projectName}/package.json"
             "${ROOT_BIN_DIR}/${projectName}/${projectName}.cabal"
         DEPENDS "${ROOT_SRC_DIR}/build-scripts/generateCabal.py"
