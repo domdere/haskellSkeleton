@@ -45,7 +45,7 @@ MACRO ( ADD_SRC_PATH var )
     SET (${var} )
 
     FOREACH ( srcFile ${ARGN} )
-        SET (${var} ${${var}} "${ROOT_SRC_DIR}/${srcFile}")
+        SET (${var} ${${var}} "${CMAKE_CURRENT_SOURCE_DIR}/${srcFile}")
     ENDFOREACH ( srcFile srcFiles )
 
 ENDMACRO ( ADD_SRC_PATH var )
@@ -55,7 +55,7 @@ MACRO ( ADD_BIN_PATH var )
     SET (${var} )
 
     FOREACH ( srcFile ${ARGN} )
-        SET (${var} ${var} "${ROOT_BIN_DIR}/${srcFile}")
+        SET (${var} ${var} "${CMAKE_CURRENT_BINARY_DIR}/${srcFile}")
     ENDFOREACH ( srcFile srcFiles )
 
 ENDMACRO ( ADD_BIN_PATH var )
@@ -63,7 +63,7 @@ ENDMACRO ( ADD_BIN_PATH var )
 
 MACRO ( BUILD_WITH_CABAL projectName projectOutput )
 
-    ADD_PATH ( "${ROOT_BIN_DIR}/${projectName}" SRC_DEPENDS ${ARGN})
+    ADD_PATH ( "${CMAKE_CURRENT_BINARY_DIR}" SRC_DEPENDS ${ARGN})
 
     IF ( HASKELL_MACRO_DEBUG )
         MESSAGE ( STATUS "Setting up cabal target:" )
@@ -79,9 +79,9 @@ MACRO ( BUILD_WITH_CABAL projectName projectOutput )
         OUTPUT ${projectOutput}
         COMMAND "${CABAL_EXECUTABLE}"
         ARGS "install"
-            "--prefix" "${ROOT_BIN_DIR}/${projectName}"
-        DEPENDS ${projectName}-preprocessing "${ROOT_BIN_DIR}/${projectName}/${projectName}.cabal"
-        WORKING_DIRECTORY "${ROOT_BIN_DIR}/${projectName}" )
+            "--prefix" "${CMAKE_CURRENT_BINARY_DIR}"
+        DEPENDS ${projectName}-preprocessing "${CMAKE_CURRENT_BINARY_DIR}/${projectName}.cabal"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}" )
     SET ( SRC_DEPENDS )
 
 ENDMACRO ( BUILD_WITH_CABAL )
@@ -105,16 +105,16 @@ MACRO ( COPY_FILES_SRC_TO_BIN projectName)
     FOREACH (filename ${ARGN} )
 
         IF ( HASKELL_MACRO_DEBUG )
-            MESSAGE ( STATUS "Adding target to create ${ROOT_BIN_DIR}/${projectName}/${filename} from ${ROOT_SRC_DIR}/${projectName}/${filename}" )
+            MESSAGE ( STATUS "Adding target to create ${CMAKE_CURRENT_BINARY_DIR}/${filename} from ${CMAKE_CURRENT_SOURCE_DIR}/${filename}" )
         ENDIF ( HASKELL_MACRO_DEBUG )
 
         ADD_CUSTOM_COMMAND (
-            OUTPUT "${ROOT_BIN_DIR}/${projectName}/${filename}"
+            OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${filename}"
             COMMAND "cp"
             ARGS "-v"
-                "${filename}" "${ROOT_BIN_DIR}/${projectName}/${filename}"
-            DEPENDS "${ROOT_SRC_DIR}/${projectName}/${filename}"
-            WORKING_DIRECTORY "${ROOT_SRC_DIR}/${projectName}" )
+                "${filename}" "${CMAKE_CURRENT_BINARY_DIR}/${filename}"
+            DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${filename}"
+            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" )
 
     ENDFOREACH (filename ${ARGN} )
 
@@ -126,21 +126,29 @@ MACRO ( ADD_DOCUMENTATION_TARGET projectName )
         ${projectName}-doc
         COMMAND "${HADDOCK_EXECUTABLE}"
             "-h"
-            -o "${ROOT_BIN_DIR}/${projectName}/doc/"
-            "${projectName}/main.hs"
+            -o "${CMAKE_CURRENT_BINARY_DIR}/doc/"
+            "main.hs"
         DEPENDS ${projectName}
-        WORKING_DIRECTORY "${ROOT_BIN_DIR}" )
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}" )
 
 ENDMACRO ( ADD_DOCUMENTATION_TARGET projectName )
 
 
 MACRO ( ADD_HASKELL_EXECUTABLE_TARGET projectName )
 
+    CABAL_TARGET ( ${projectName} )
+
+    ADD_HASKELL_EXECUTABLE_TARGET_WITH_CABAL ( ${projectName} ${ARGN})
+    
+ENDMACRO ( ADD_HASKELL_EXECUTABLE_TARGET )
+
+MACRO ( ADD_HASKELL_EXECUTABLE_TARGET_WITH_CABAL projectName )
+
     IF ( HASKELL_MACRO_DEBUG )
         MESSAGE ( STATUS "Attempting to add executable project: ${projectName}" )
     ENDIF ( HASKELL_MACRO_DEBUG )
 
-    GET_EXECUTABLE_NAME ( "${ROOT_BIN_DIR}/${projectName}/bin/${projectName}" ${projectName}_EXECUTABLE )
+    GET_EXECUTABLE_NAME ( "${CMAKE_CURRENT_BINARY_DIR}/bin/${projectName}" ${projectName}_EXECUTABLE )
 
     IF ( HASKELL_MACRO_DEBUG )
         MESSAGE ( STATUS "Trying to create rule to make ${${projectName}_EXECUTABLE}" )
@@ -149,8 +157,6 @@ MACRO ( ADD_HASKELL_EXECUTABLE_TARGET projectName )
     ADD_SRC_PATH ( ${projectName}_SOURCES ${ARGN} )
 
     COPY_FILES_SRC_TO_BIN ( ${projectName} ${ARGN} )
-
-    CABAL_TARGET ( ${projectName} )
 
     BUILD_WITH_CABAL ( ${projectName} 
         ${${projectName}_EXECUTABLE}
@@ -166,14 +172,15 @@ MACRO ( ADD_HASKELL_EXECUTABLE_TARGET projectName )
 
     ADD_DOCUMENTATION_TARGET ( ${projectName} )
 
-ENDMACRO ( ADD_HASKELL_EXECUTABLE_TARGET )
+ENDMACRO ( ADD_HASKELL_EXECUTABLE_TARGET_WITH_CABAL )
+
 
 MACRO ( ADD_HASKELL_LIBRARY projectName )
     IF ( HASKELL_MACRO_DEBUG )
         MESSAGE ( STATUS "Attempting to add haskell library/module: ${projectName}" )
     ENDIF ( HASKELL_MACRO_DEBUG )
 
-    ADD_PATH ( "${ROOT_BIN_DIR}/${projectName}" ${projectName}_DEPENDS ${ARGN})
+    ADD_PATH ( "${CMAKE_CURRENT_BINARY_DIR}" ${projectName}_DEPENDS ${ARGN})
 
     IF ( HASKELL_MACRO_DEBUG )
         MESSAGE ( STATUS "File Dependencies for ${projectName}: ${${projectName}_DEPENDS}" )
@@ -194,14 +201,14 @@ MACRO ( CABAL_TARGET projectName )
     ENDIF ( UNIX )
 
     ADD_CUSTOM_COMMAND ( 
-        OUTPUT "${ROOT_BIN_DIR}/${projectName}/${projectName}.cabal"
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${projectName}.cabal"
         COMMAND "${PYTHON_EXECUTABLE}"
         ARGS "generateCabal.py"
             "${${projectName}_SYSTEMOPT}"
-            "${ROOT_SRC_DIR}/${projectName}/package.json"
-            "${ROOT_BIN_DIR}/${projectName}/${projectName}.cabal"
+            "${CMAKE_CURRENT_SOURCE_DIR}/package.json"
+            "${CMAKE_CURRENT_BINARY_DIR}/${projectName}.cabal"
         DEPENDS "${ROOT_SRC_DIR}/build-scripts/generateCabal.py"
-            "${ROOT_SRC_DIR}/${projectName}/package.json"
+            "${CMAKE_CURRENT_SOURCE_DIR}/package.json"
         WORKING_DIRECTORY "${ROOT_SRC_DIR}/build-scripts/" )
 
 ENDMACRO ( CABAL_TARGET projectName )
@@ -209,16 +216,16 @@ ENDMACRO ( CABAL_TARGET projectName )
 MACRO ( ADD_LICENCE_TARGET projectName license )
 
     ADD_CUSTOM_COMMAND (
-        OUTPUT "${ROOT_BIN_DIR}/${projectName}/LICENSE"
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/LICENSE"
         COMMAND "cp"
         ARGS "-v"
-            "${license}" "${ROOT_BIN_DIR}/${projectName}/LICENSE"
+            "${license}" "${CMAKE_CURRENT_BINARY_DIR}/LICENSE"
         DEPENDS "${ROOT_SRC_DIR}/Licences/${license}"
         WORKING_DIRECTORY "${ROOT_SRC_DIR}/Licences" 
         COMMENT "Installing LICENSE file for ${projectName}" )
 
     ADD_CUSTOM_TARGET ( ${projectName}-license ALL 
-        DEPENDS "${ROOT_BIN_DIR}/${projectName}/LICENSE" )
+        DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/LICENSE" )
 
     ADD_DEPENDENCIES ( ${projectName}-executable ${projectName}-license )
 
@@ -228,16 +235,16 @@ ENDMACRO ( ADD_LICENCE_TARGET projectName license )
 MACRO ( ADD_README_TARGET projectName )
 
     ADD_CUSTOM_COMMAND (
-        OUTPUT "${ROOT_BIN_DIR}/${projectName}/README"
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/README"
         COMMAND "cp"
         ARGS "-v"
-            "README" "${ROOT_BIN_DIR}/${projectName}/README"
-        DEPENDS "${ROOT_SRC_DIR}/${projectName}/README"
-        WORKING_DIRECTORY "${ROOT_SRC_DIR}/${projectName}"
+            "README" "${CMAKE_CURRENT_BINARY_DIR}/README"
+        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/README"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
         COMMENT "Installing README file for ${projectName}" )
 
     ADD_CUSTOM_TARGET ( ${projectName}-readme ALL 
-        DEPENDS "${ROOT_BIN_DIR}/${projectName}/README" )
+        DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/README" )
 
     ADD_DEPENDENCIES ( ${projectName}-executable ${projectName}-readme )
 
@@ -246,17 +253,17 @@ ENDMACRO ( ADD_README_TARGET projectName )
 MACRO ( ADD_HSC2HS_TARGET projectName hscFileSansExtension )
 
     ADD_CUSTOM_COMMAND (
-        OUTPUT "${ROOT_BIN_DIR}/${projectName}/${hscFileSansExtension}.hs"
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${hscFileSansExtension}.hs"
         COMMAND "${HSC2HS_EXECUTABLE}"
         ARGS "-I${ROOT_SRC_DIR}" 
-            "-o" "${ROOT_BIN_DIR}/${projectName}/${hscFileSansExtension}.hs"
+            "-o" "${CMAKE_CURRENT_BINARY_DIR}/${hscFileSansExtension}.hs"
             "${projectName}/${hscFileSansExtension}.hsc"
-        DEPENDS "${ROOT_BIN_DIR}/${projectName}/${hscFileSansExtension}.hsc"
+        DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/${hscFileSansExtension}.hsc"
         WORKING_DIRECTORY "${ROOT_BIN_DIR}" 
         COMMENT "Preprocessing ${hscFileSansExtension}.hsc -> ${hscFileSansExtension}.hs" )
 
     ADD_CUSTOM_TARGET ( ${projectName}-${hscFileSansExtension} ALL 
-        DEPENDS "${ROOT_BIN_DIR}/${projectName}/${hscFileSansExtension}.hs" )
+        DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/${hscFileSansExtension}.hs" )
 
     ADD_DEPENDENCIES ( ${projectName} 
         ${projectName}-${hscFileSansExtension} )
@@ -267,20 +274,20 @@ ENDMACRO ( ADD_HSC2HS_TARGET projectName hscFileSansExtension )
 MACRO ( INSTALL_CPP_RELOCATABLE_LIBRARY projectName library )
 
     GET_RELOCATABLE_LIBRARY_NAME( ${library} ${library}_NAME )
-    GET_EXECUTABLE_NAME ( "${ROOT_BIN_DIR}/${projectName}/bin/${projectName}" ${projectName}_EXECUTABLE )
+    GET_EXECUTABLE_NAME ( "${CMAKE_CURRENT_BINARY_DIR}/bin/${projectName}" ${projectName}_EXECUTABLE )
 
     ADD_CUSTOM_COMMAND (
-        OUTPUT "${ROOT_BIN_DIR}/${projectName}/bin/${${library}_NAME}"
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/bin/${${library}_NAME}"
         COMMAND "cp"
         ARGS "-v"
-            "${ROOT_BIN_DIR}/${library}/${${library}_NAME}" "${ROOT_BIN_DIR}/${projectName}/bin/${${library}_NAME}"
+            "${ROOT_BIN_DIR}/${library}/${${library}_NAME}" "${CMAKE_CURRENT_BINARY_DIR}/bin/${${library}_NAME}"
         DEPENDS ${library} "${${projectName}_EXECUTABLE}"
-        WORKING_DIRECTORY "${ROOT_SRC_DIR}/${projectName}"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
         COMMENT "Installing library ${${library}_NAME} for ${projectName}" )
 
     ADD_CUSTOM_TARGET ( ${projectName}-${library} ALL 
         DEPENDS ${projectName}-executable
-            "${ROOT_BIN_DIR}/${projectName}/bin/${${library}_NAME}" )
+            "${CMAKE_CURRENT_BINARY_DIR}/bin/${${library}_NAME}" )
 
     ADD_DEPENDENCIES ( ${projectName} 
         ${projectName}-${library} )
