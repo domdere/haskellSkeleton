@@ -192,4 +192,6 @@ INCLUDE_DIRECTORIES (
 INCLUDE( HaskellMacros )
 
 # Sub Projects:
+ADD_SUBPROJECT(Handlers)
+ADD_SUBPROJECT(Routes)
 ADD_SUBPROJECT(app)
