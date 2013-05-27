@@ -11,5 +11,5 @@
     "main-is": "Main.hs",
     "extra-lib-dirs": [],
     "extra-libraries": [],
-    "build-depends": "base ==4.6.*, snap-server, snap-core" 
+    "build-depends": "base ==4.6.*, snap-server, snap-core, optparse-applicative" 
 }

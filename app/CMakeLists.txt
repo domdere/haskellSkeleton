@@ -5,4 +5,6 @@ ADD_LICENCE_TARGET (app "MIT-LICENSE")
 
 #INSTALL_CPP_RELOCATABLE_LIBRARY ( "app" "Blah" )
 
-#ADD_DEPENDENCIES ( app-executable  )
+ADD_DEPENDENCIES ( app-executable
+    Routes
+    Handlers )
