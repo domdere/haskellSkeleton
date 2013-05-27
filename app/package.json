@@ -1,0 +1,15 @@
+{
+    "name": "snapApp",
+    "version": "0.1.0.0",
+    "synopsis": "Barebones Snap Project",
+    "homepage": "http://nothing.com",
+    "license": "MIT",
+    "author": "Author",
+    "maintainer": "author@email.com",
+    "category": "Text",
+    "build-type": "Simple",
+    "main-is": "Main.hs",
+    "extra-lib-dirs": [],
+    "extra-libraries": [],
+    "build-depends": "base ==4.6.*, snap-server, snap-core" 
+}
