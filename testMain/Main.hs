@@ -1,3 +1,5 @@
+module Main where
+
 import TestLib.TestModule as TestLib
 import TestFFI.TestWrapper as Wrapped
 
