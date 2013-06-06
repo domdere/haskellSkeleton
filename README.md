@@ -14,3 +14,5 @@ The **CMake** scripts use **Cabal** to build the Haskell executables and librari
 ## Disclaimer
 
 The **CMake** scripts have gotten far more convoluted than they probably have to be, they work though, perhaps someone else can get some better ideas from them.
+
+Apart from the ability to add other CMake targets to your build, this doesnt offer much more than just adding a `c-sources` list to your `cabal` file.  Perhaps once it can embed python code it will have something to offer that will make the trouble worthwhile
