@@ -192,7 +192,7 @@ INCLUDE_DIRECTORIES (
 INCLUDE( HaskellMacros )
 
 # Sub Projects:
-#ADD_SUBPROJECT(sampleBinaryProject)
+ADD_SUBPROJECT(Foreign)
 ADD_SUBPROJECT(testMain)
 ADD_SUBPROJECT(TestLib)
 ADD_SUBPROJECT(TestCLib)
