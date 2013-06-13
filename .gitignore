@@ -3,6 +3,8 @@
 *.o
 *.hi
 
+# files we just genreally ont want in the repo
+*.swp
 *.log
 
 # Python compiled bytecode
