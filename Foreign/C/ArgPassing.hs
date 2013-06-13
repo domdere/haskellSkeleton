@@ -15,3 +15,6 @@ newtype OutPtr a = OutPtr { fromOutPtr :: Ptr a } deriving (Show, Eq)
 -- | Similar to OutPtr but a special case for CString = Ptr CChar,
 -- | as there will be some slightly different semantics due to the additional seps necesarry to
 -- | handle the NUL terminated strings
+-- | e.g:
+-- | err_t foo(char* output)
+newtype OutCString = OutCString { fromOutCString :: CString } deriving (Show, Eq)
