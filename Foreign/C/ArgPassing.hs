@@ -10,6 +10,8 @@ import Foreign.Ptr
 import Foreign.Storable
 import Foreign 
 
+-- Type classes to define the semantics through which inputs and outputs can be passed to C functions.
+
 -- TODO: (Dom De Re) Right now I only define these new types so i can start using them in 
 -- Function type signatures, i'll write up the helper functions that actually 
 -- handle the arg passing later
@@ -49,6 +51,14 @@ newtype InCString = InCString { fromInCString :: CString } deriving (Show, Eq)
 -- | e.g:
 -- | err_t foo(char* inputoutput);
 newtype InOutCString = InOutCString { fromInOutCString :: CString } deriving (Show, Eq)
+
+-- | This is a data type not so much for passing to C functions, but for including in Haskell
+-- | representations of C structs, with fixed length char arrays
+
+data FixedLengthString = FixedLengthString {
+    fromFixedLengthCString :: String,
+    fixedArrayLength :: Int
+} deriving (Show, Eq)
 
 -- Storable instances for these 6 types:
 -- essentially use the Storableness of the underlying Ptr/CString, 
@@ -134,6 +144,8 @@ instance Storable InOutCString where
 
 -- simple things we want to do with these data types
 
+-- Plain Ptr functions:
+
 -- | Marshals a value into a Ptr and wraps that in the InPtr type
 withInPtr :: (Storable a) => a -> (InPtr a -> IO b) -> IO b
 withInPtr value action = with value (\ptr -> action (InPtr ptr))
@@ -162,3 +174,50 @@ withOutPtr action = alloca (wrapOutPtrIO action)
 -- | Combines In and OutPtr into InOutPtr
 withInOutPtr :: (Storable a) => a -> (InOutPtr a -> IO b) -> IO (a, b)
 withInOutPtr value action = with value $ wrapInOutPtrIO action
+
+-- End Plain Ptr functions:
+
+-- CString Ptr Functions:
+
+-- | peeks at the value of a Cstring and then caps the length of the result
+-- | at the given length bound and wraps the whole thing up in a FixedLengthString with the given max length
+-- | Note that 'maxlength' includes the NUL character)
+peekFixedLengthString :: Int -> CString -> IO FixedLengthString
+peekFixedLengthString maxlength p = do
+    str <- peekCString $ p `plusPtr` 0
+    -- Only take maxlength - 1 chars to allow for the NUL
+    -- character when 'poke' is used to store it
+    return $ FixedLengthString (take (maxlength - 1) str) maxlength
+
+pokeFixedLengthString :: CString -> FixedLengthString -> IO ()
+pokeFixedLengthString p (FixedLengthString str maxlength)= do
+    withCString str (\cstr -> do
+        copyBytes p cstr (min maxlength ((length str) + 1)))
+    return ()
+
+withInCString :: String -> (InCString -> IO a) -> IO a
+withInCString value action = withCString value (\cstr -> action (InCString cstr))
+
+withOutCString :: Int -> (OutCString -> IO a) -> IO (String, a)
+withOutCString bufferSize action = do
+    allocaArray bufferSize (\buffer -> do
+        retval <- action (OutCString buffer)
+        str <- peekCString buffer
+        return (str, retval))
+
+-- | creates a CString with the initial value given,
+-- | with the max length given (in case it doesnt 
+-- | match the length of the given initial value)
+withInOutCString :: Int -> String -> (InOutCString -> IO a) -> IO (String, a)
+withInOutCString bufferlength initialValue action = do
+    withCString initialValue (\cstr -> do
+        allocaArray bufferlength (\buffer -> do
+            copyBytes buffer cstr (min bufferlength ((length initialValue) + 1))
+            retval <- action (InOutCString buffer)
+            str <- peekCString buffer
+            return (str, retval))) 
+
+-- End CString Ptr Functions
+
+-- Buffer Ptr Functions:
+-- End Buffer Ptr Functions
