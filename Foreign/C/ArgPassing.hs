@@ -16,6 +16,15 @@ import Foreign
 -- Function type signatures, i'll write up the helper functions that actually 
 -- handle the arg passing later
 
+-- Type Classes
+
+class ArrayCArgument m where
+    fromArrayCArgument :: m a -> Ptr a
+
+    wrapArray :: Ptr a -> m a
+
+-- End Type Classes
+
 -- | For C functions that accept a pointer to write the output to,
 -- | e.g,
 -- | err_t foo(void* output);
@@ -59,6 +68,21 @@ data FixedLengthString = FixedLengthString {
     fromFixedLengthCString :: String,
     fixedArrayLength :: Int
 } deriving (Show, Eq)
+
+-- | Input and output buffers:
+
+-- | void* buffer
+newtype VoidBuffer = VoidBuffer { fromVoidBuffer :: Ptr () } deriving (Show, Eq)
+
+-- | End Buffers
+
+-- | Input and output arrays
+
+data InArray a = InArray (Ptr a) deriving (Show, Eq)
+data OutArray a = OutArray (Ptr a)  deriving (Show, Eq)
+data InOutArray a = InOutArray (Ptr a) deriving (Show, Eq)
+
+-- | End Input and output arrays
 
 -- Storable instances for these 6 types:
 -- essentially use the Storableness of the underlying Ptr/CString, 
@@ -142,6 +166,61 @@ instance Storable InOutCString where
         poke (p `plusPtr` 0) cstr
         return ()
 
+
+instance Storable (InArray a) where
+    sizeOf (InArray ptr) = sizeOf ptr
+
+    alignment = sizeOf
+
+    peek p = do
+        ptr <- peek (p `plusPtr` 0)
+        return $ InArray ptr
+
+    poke p (InArray ptr) = do
+        poke (p `plusPtr` 0) ptr
+        return ()
+
+instance ArrayCArgument InArray where
+    fromArrayCArgument (InArray ptr) = ptr
+
+    wrapArray = InArray
+
+instance ArrayCArgument OutArray where
+    fromArrayCArgument (OutArray ptr) = ptr
+
+    wrapArray = OutArray
+
+instance ArrayCArgument InOutArray where
+    fromArrayCArgument (InOutArray ptr) = ptr
+
+    wrapArray = InOutArray
+
+instance Storable (OutArray a) where
+    sizeOf (OutArray ptr) = sizeOf ptr
+
+    alignment = sizeOf
+
+    peek p = do
+        ptr <- peek (p `plusPtr` 0)
+        return $ OutArray ptr
+
+    poke p (OutArray ptr) = do
+        poke (p `plusPtr` 0) ptr
+        return ()
+
+instance Storable (InOutArray a) where
+    sizeOf (InOutArray ptr) = sizeOf ptr
+
+    alignment = sizeOf
+
+    peek p = do
+        ptr <- peek (p `plusPtr` 0)
+        return $ InOutArray ptr
+
+    poke p (InOutArray ptr) = do
+        poke (p `plusPtr` 0) ptr
+        return ()
+
 -- simple things we want to do with these data types
 
 -- Plain Ptr functions:
@@ -220,4 +299,34 @@ withInOutCString bufferlength initialValue action = do
 -- End CString Ptr Functions
 
 -- Buffer Ptr Functions:
+withVoidBuffer :: Int -> (VoidBuffer -> IO a) -> IO a
+withVoidBuffer numBytes action = allocaBytes numBytes (\buffer -> action (VoidBuffer buffer))
+    
+
 -- End Buffer Ptr Functions
+
+-- Array Functions
+
+peekWrappedArray :: (Storable a, ArrayCArgument m) => Int -> m a -> IO [a]
+peekWrappedArray length wrappedPtr = peekArray length (fromArrayCArgument wrappedPtr)
+
+-- | takes a list of arguments to write to a given array bound by the given length,
+-- | returns a list containing the 
+pokeWrappedArray :: (Storable a, ArrayCArgument m) => Int -> m a -> [a] -> IO [a]
+pokeWrappedArray arraySize wrappedPtr list = let (xs, remainder) = (splitAt arraySize list) in do
+    pokeArray (fromArrayCArgument wrappedPtr) xs
+    return $ remainder
+
+withInArray :: (Storable a) => Int -> [a] -> (InArray a -> IO b) -> IO ([a], b)
+withInArray arraySize list action = let (xs, remainder) = (splitAt arraySize list) in do
+    retval <- withArray xs (\array -> (action (InArray array)))
+    return (remainder, retval)
+
+withOutArray :: (Storable a) => Int -> (OutArray a -> IO b) -> IO ([a], b)
+withOutArray arraySize action = do
+    allocaArray arraySize (\array -> do
+        retval <- action (wrapArray array)
+        list <- peekArray arraySize array
+        return (list, retval))
+
+-- End Array Functions
