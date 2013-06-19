@@ -74,9 +74,9 @@ data FixedLengthString = FixedLengthString {
 -- | void* buffer
 newtype VoidBuffer = VoidBuffer { fromVoidBuffer :: Ptr () } deriving (Show, Eq)
 
-type InArray = VoidBuffer
-type OutArray = VoidBuffer
-type InOutArray = VoidBuffer
+type InBuffer = VoidBuffer
+type OutBuffer = VoidBuffer
+type InOutBuffer = VoidBuffer
 
 -- | End Buffers
 
