@@ -105,6 +105,12 @@ MACRO ( DISPLAY_HASKELL_INFO )
         MESSAGE ( STATUS "hsc2hs was NOT Found!" )
     ENDIF ( HSC2HS_FOUND )
 
+    IF ( HSC2HS_BINDINGS_DSL_FOUND )
+        MESSAGE ( STATUS "bindings-dsl was found at: ${BINDINGS_DSL_INCLUDE}" )
+    ELSE ( HSC2HS_BINDINGS_DSL_FOUND )
+        MESSAGE ( SEND_ERROR "bindings-dsl was NOT found, this is necessary for .hsc files that require pre-processing, please install it with 'cabal install bindings-dsl'" )
+    ENDIF ( HSC2HS_BINDINGS_DSL_FOUND )
+
 
 ENDMACRO ( DISPLAY_HASKELL_INFO )
 
@@ -112,7 +118,7 @@ MACRO (DISPLAY_GIT_INFO )
     IF ( GIT_FOUND )
         MESSAGE ( STATUS "Git Vers.${GIT_VERSION_STRING} was found at: ${GIT_EXECUTABLE}" )
     ELSE ( GIT_FOUND )
-        MESSAGE ( ERROR "Git was not found, its required for versioning" )
+        MESSAGE ( SEND_ERROR "Git was not found, its required for versioning" )
     ENDIF ( GIT_FOUND )
 ENDMACRO (DISPLAY_GIT_INFO )
 

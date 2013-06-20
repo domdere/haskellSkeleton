@@ -256,6 +256,7 @@ MACRO ( ADD_HSC2HS_TARGET projectName hscFileSansExtension )
         OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${hscFileSansExtension}.hs"
         COMMAND "${HSC2HS_EXECUTABLE}"
         ARGS "-I${ROOT_SRC_DIR}" 
+            "-I${BINDINGS_DSL_INCLUDE}"
             "-o" "${CMAKE_CURRENT_BINARY_DIR}/${hscFileSansExtension}.hs"
             "${projectName}/${hscFileSansExtension}.hsc"
         DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/${hscFileSansExtension}.hsc"
