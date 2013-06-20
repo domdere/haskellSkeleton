@@ -311,26 +311,37 @@ withVoidBuffer numBytes action = allocaBytes numBytes (\buffer -> action (VoidBu
 
 -- Array Functions
 
-peekWrappedArray :: (Storable a, ArrayCArgument m) => Int -> m a -> IO [a]
-peekWrappedArray length wrappedPtr = peekArray length (fromArrayCArgument wrappedPtr)
+peekWrappedArray :: (Integral a, Storable b, ArrayCArgument m) => a -> m b -> IO [b]
+peekWrappedArray length wrappedPtr = peekArray intLength (fromArrayCArgument wrappedPtr)
+    where 
+        intLength = (fromInteger . toInteger) length
 
 -- | takes a list of arguments to write to a given array bound by the given length,
 -- | returns a list containing the 
-pokeWrappedArray :: (Storable a, ArrayCArgument m) => Int -> m a -> [a] -> IO [a]
-pokeWrappedArray arraySize wrappedPtr list = let (xs, remainder) = (splitAt arraySize list) in do
-    pokeArray (fromArrayCArgument wrappedPtr) xs
-    return $ remainder
+pokeWrappedArray :: (Integral a, Storable b, ArrayCArgument m) => a -> m b -> [b] -> IO [b]
+pokeWrappedArray arraySize wrappedPtr list = 
+    let intArraySize    = (fromInteger . toInteger) arraySize
+        (xs, remainder) = (splitAt intArraySize list) 
+    in do
+        pokeArray (fromArrayCArgument wrappedPtr) xs
+        return $ remainder
 
-withInArray :: (Storable a) => Int -> [a] -> (InArray a -> IO b) -> IO ([a], b)
-withInArray arraySize list action = let (xs, remainder) = (splitAt arraySize list) in do
-    retval <- withArray xs (\array -> (action (InArray array)))
-    return (remainder, retval)
+withInArray :: (Integral a, Storable b) => a -> [b] -> (InArray b -> IO c) -> IO ([b], c)
+withInArray arraySize list action = 
+    let intArraySize = (fromInteger . toInteger) arraySize
+        (xs, remainder) = (splitAt intArraySize list) 
+    in do
+        retval <- withArray xs (\array -> (action (InArray array)))
+        return (remainder, retval)
 
-withOutArray :: (Storable a) => Int -> (OutArray a -> IO b) -> IO ([a], b)
-withOutArray arraySize action = do
-    allocaArray arraySize (\array -> do
-        retval <- action (wrapArray array)
-        list <- peekArray arraySize array
-        return (list, retval))
+withOutArray :: (Integral a, Storable b) => a -> (OutArray b -> IO c) -> IO ([b], c)
+withOutArray arraySize action =
+    let intArraySize        = (fromInteger . toInteger) arraySize
+        arrayAction array   = do
+            retval <- action (wrapArray array)
+            list <- peekArray intArraySize array
+            return (list, retval)
+    in do
+        allocaArray intArraySize arrayAction
 
 -- End Array Functions
