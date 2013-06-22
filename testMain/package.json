@@ -11,5 +11,5 @@
     "main-is": "Main.hs",
     "extra-lib-dirs": ["../TestCLib"],
     "extra-libraries": ["TestCLib"],
-    "build-depends": "base ==4.6.*" 
+    "build-depends": "base ==4.6.*, fast-logger, template-haskell, text, monad-logger" 
 }
