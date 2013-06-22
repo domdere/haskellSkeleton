@@ -13,9 +13,10 @@ import TestFFI.TestWrapper as Wrapped
 
 -- | Entry point for the test application
 
-loggerFunc :: MonadLoggerFunction -> IO ()
-loggerFunc logFunc = do
-    runLoggingT ($(logInfo) "Demo log line") logFunc
+loggerFunc :: LoggingT IO ()
+loggerFunc = do
+    $(logInfo) "Demo log line"
+    liftIO $ putStrLn "Inside Logging Test Function"
     return ()
 
 main :: IO ()
@@ -24,8 +25,8 @@ main = do
     logger <- mkLogger True logFile    
     putStr $ show $ TestLib.testFunction 2
     Wrapped.hello_world
-    runLoggingT (LoggingT loggerFunc) $ monadLoggerFunction logger LevelInfo 
-    putStr "The End."
+    runLoggingT loggerFunc $ monadLoggerFunction logger LevelInfo 
+    putStrLn "The End."
     loggerFlush logger
     hFlush logFile
     hClose logFile
