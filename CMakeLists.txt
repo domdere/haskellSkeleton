@@ -197,8 +197,16 @@ INCLUDE_DIRECTORIES (
 
 INCLUDE( HaskellMacros )
 
+# This will allow me to move the shared objects around after they have been built, and as long as i keep the requires shared libraries in the
+# same directory (or the proper trusted paths) they will find each other in link time.
+SET ( CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-Wl,-rpath,'$ORIGIN'" )
+SET ( CMAKE_C_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG} "-Wl,-rpath,'$ORIGIN'" )
+SET ( CMAKE_C_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE} "-Wl,-rpath,'$ORIGIN'" )
+SET ( CMAKE_C_FLAGS_RELWITHDEBINFO ${CMAKE_C_FLAGS_RELWITHDEBINFO} "-Wl,-rpath,'$ORIGIN'" )
+
 # Sub Projects:
+ADD_SUBPROJECT(app)
 ADD_SUBPROJECT(Foreign)
 ADD_SUBPROJECT(Handlers)
 ADD_SUBPROJECT(Routes)
-ADD_SUBPROJECT(app)
+ADD_SUBPROJECT(System)
