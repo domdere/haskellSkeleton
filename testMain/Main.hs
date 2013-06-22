@@ -15,7 +15,7 @@ import TestFFI.TestWrapper as Wrapped
 
 loggerFunc :: MonadLoggerFunction -> IO ()
 loggerFunc logFunc = do
-    runLoggingT ($(logDebug) "test log line") logFunc
+    runLoggingT ($(logInfo) "Demo log line") logFunc
     return ()
 
 main :: IO ()
