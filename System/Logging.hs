@@ -28,6 +28,8 @@ formatLogging dateAction codeLoc source loglevel msg =  do
     today <- dateAction
     return [LB today, LB " ", formatSource source, LB " (", formatLogLevel loglevel, LB "): ", msg, LB " (", LS (formatFileLocation codeLoc), LB ")\n"]
 
+type MonadLoggerFunction = (Loc -> LogSource -> LogLevel -> LogStr -> IO ())
+
 monadLoggerFunction :: Logger -> LogLevel -> Loc -> LogSource -> LogLevel -> LogStr -> IO ()
 monadLoggerFunction logger desiredLogLevel loc source loglevel mesg
     | not (doesLog desiredLogLevel loglevel) = return ()
