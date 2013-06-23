@@ -1,5 +1,5 @@
 {
-    "name": "testMain",
+    "name": "sampleApp",
     "version": "0.1.0.0",
     "synopsis": "testproj",
     "homepage": "http://nothing.com",
@@ -11,5 +11,5 @@
     "main-is": "Main.hs",
     "extra-lib-dirs": ["../TestCLib"],
     "extra-libraries": ["TestCLib"],
-    "build-depends": "base ==4.6.*, fast-logger, template-haskell, text, monad-logger" 
+    "build-depends": "base ==4.6.*, fast-logger, mtl, optparse-applicative, template-haskell, text, monad-logger" 
 }
