@@ -1,5 +1,6 @@
 ADD_HASKELL_EXECUTABLE_TARGET ( app
-    "Main.hs" )
+    "Main.hs"
+    "AppState.hs" )
 
 ADD_LICENCE_TARGET (app "MIT-LICENSE")
 

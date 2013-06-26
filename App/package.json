@@ -11,5 +11,5 @@
     "main-is": "Main.hs",
     "extra-lib-dirs": [],
     "extra-libraries": [],
-    "build-depends": "base ==4.6.*, snap-server, snap-core, optparse-applicative, json" 
+    "build-depends": "base ==4.6.*, mtl, transformers, MonadCatchIO-transformers, snap-server, snap-core, optparse-applicative, json" 
 }
