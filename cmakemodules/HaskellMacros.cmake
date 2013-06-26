@@ -127,9 +127,9 @@ MACRO ( ADD_DOCUMENTATION_TARGET projectName )
         COMMAND "${HADDOCK_EXECUTABLE}"
             "-h"
             -o "${CMAKE_CURRENT_BINARY_DIR}/doc/"
-            "main.hs"
+            "${CMAKE_CURRENT_BINARY_DIR}/Main.hs"
         DEPENDS ${projectName}
-        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}" )
+        WORKING_DIRECTORY "${ROOT_BIN_DIR}" )
 
 ENDMACRO ( ADD_DOCUMENTATION_TARGET projectName )
 
