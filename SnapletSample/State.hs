@@ -1,13 +1,11 @@
-{-# LANGUAGE TemplateHaskell OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell, OverloadedStrings #-}
 module SnapletSample.State where
 
-import Control.Len.TH
+import Control.Lens.TH
 import qualified Data.ByteString.Char8 as BS
-import Data.IORef
-import Data.Maybe
 import Snap
-import Snap.Snaplet.Heist
+import Snap.Snaplet.Config
 
-data SampleState = SampleState {_someBS :: IORef BS.ByteString}
+data SampleState = SampleStateT { getAppConfig :: (Config Snap AppConfig) }
 
 makeLenses ''SampleState
