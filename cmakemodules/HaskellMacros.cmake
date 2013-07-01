@@ -127,7 +127,7 @@ MACRO ( ADD_DOCUMENTATION_TARGET projectName )
         COMMAND "${HADDOCK_EXECUTABLE}"
             "-h"
             -o "${CMAKE_CURRENT_BINARY_DIR}/doc/"
-            "main.hs"
+            "Main.hs"
         DEPENDS ${projectName}
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}" )
 
@@ -205,6 +205,8 @@ MACRO ( CABAL_TARGET projectName )
         COMMAND "${PYTHON_EXECUTABLE}"
         ARGS "generateCabal.py"
             "${${projectName}_SYSTEMOPT}"
+            "--extra-libraries=\"${${projectName}_EXTRA_LIBS}\""
+            "--extra-lib-dirs=\"${${projectName}_EXTRA_LIB_DIRS}\""
             "${CMAKE_CURRENT_SOURCE_DIR}/package.json"
             "${CMAKE_CURRENT_BINARY_DIR}/${projectName}.cabal"
         DEPENDS "${ROOT_SRC_DIR}/build-scripts/generateCabal.py"
