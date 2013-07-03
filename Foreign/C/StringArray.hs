@@ -1,4 +1,4 @@
-module Foreign.C.StringArray where
+module Foreign.C.StringArray ( withCStringArray ) where
 
 import qualified Data.ByteString as BS
 import Foreign.C.String (CString, withCString)
