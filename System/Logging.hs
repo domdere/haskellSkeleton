@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module System.Logging where
+module System.Logging (monadLoggerFunction) where
 
 import Control.Monad.Logger
 import qualified Data.Text as Text
