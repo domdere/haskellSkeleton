@@ -87,7 +87,7 @@ def generateCabalString(
 
     if options.profiling:
         logger.info('Adding profiling options for the build...')
-        ghcOptions += ' -prof -auto-all'
+        ghcOptions += ' -rtsopts -eventlog -threaded'
 
     optionStr = '-i%s %s' % (includeDirs, ghcOptions)
 
