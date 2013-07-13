@@ -17,6 +17,7 @@ optparser = (mkCommandLineOptions "./test.log" LevelInfo)
     <$> optionalLogFileOpt
     <*> optionalLogLevelOpt
 
+{-
 logFileOpt :: Parser FilePath
 logFileOpt = strOption
     (long "logfile"
@@ -37,3 +38,4 @@ logLevelOpt = read `fmap` logLevelStrOption
 
 optionalLogLevelOpt :: Parser (Maybe LogLevel)
 optionalLogLevelOpt = optional logLevelOpt
+-}

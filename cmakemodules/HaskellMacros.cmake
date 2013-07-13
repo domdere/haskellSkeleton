@@ -1,4 +1,5 @@
-OPTION ( HASKELL_MACRO_DEBUG "Debug for Haskell Project Macros" )
+OPTION ( HASKELL_MACRO_DEBUG "Debug for Haskell Project Macros" OFF )
+OPTION ( ENABLE_HASKELL_PROFILING "Set to true to add profiling bookkeeping to the binaries" OFF )
 
 MACRO ( GET_EXECUTABLE_NAME input outputVar)
     IF ( WIN32 )
@@ -205,12 +206,17 @@ MACRO ( CABAL_TARGET projectName )
         SET ( ${projectName}_RELEASE_FLAG "--release" )
     ENDIF ( ${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" )
 
+    IF ( ENABLE_HASKELL_PROFILING )
+        SET ( ${projectName}_PROFILE_FLAG "--profiling" )
+    ENDIF ( ENABLE_HASKELL_PROFILING )
+
     ADD_CUSTOM_COMMAND ( 
         OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${projectName}.cabal"
         COMMAND "${PYTHON_EXECUTABLE}"
         ARGS "generateCabal.py"
             "${${projectName}_SYSTEMOPT}"
             "${${projectName}_RELEASE_FLAG}"
+            "${${projectName}_PROFILE_FLAG}"
             "--extra-libraries=\"${${projectName}_EXTRA_LIBS}\""
             "--extra-lib-dirs=\"${${projectName}_EXTRA_LIB_DIRS}\""
             "${CMAKE_CURRENT_SOURCE_DIR}/package.json"
