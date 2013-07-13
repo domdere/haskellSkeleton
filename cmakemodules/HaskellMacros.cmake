@@ -1,4 +1,6 @@
-OPTION ( HASKELL_MACRO_DEBUG "Debug for Haskell Project Macros" )
+OPTION ( HASKELL_MACRO_DEBUG "Debug for Haskell Project Macros" OFF )
+OPTION ( ENABLE_HASKELL_PROFILING "Set to true to add profiling bookkeeping to the binaries" OFF )
+OPTION ( ENABLE_HASKELL_PARALLEL_PROFILING "Set to true to add bookkeeping for profiling parallelism to the binaries" OFF )
 
 MACRO ( GET_EXECUTABLE_NAME input outputVar)
     IF ( WIN32 )
@@ -72,6 +74,10 @@ MACRO ( BUILD_WITH_CABAL projectName projectOutput )
         MESSAGE ( STATUS "  --Dependencies: ${SRC_DEPENDS}" )
     ENDIF ( HASKELL_MACRO_DEBUG )
 
+    IF ( ENABLE_HASKELL_PROFILING )
+        SET ( ${projectName}_PROFILE_FLAG "--enable-executable-profiling" )
+    ENDIF ( ENABLE_HASKELL_PROFILING )
+
     ADD_CUSTOM_TARGET ( ${projectName}-preprocessing
         DEPENDS ${SRC_DEPENDS} )
 
@@ -79,6 +85,7 @@ MACRO ( BUILD_WITH_CABAL projectName projectOutput )
         OUTPUT ${projectOutput}
         COMMAND "${CABAL_EXECUTABLE}"
         ARGS "install"
+            ${${projectName}_PROFILE_FLAG}
             "--prefix" "${CMAKE_CURRENT_BINARY_DIR}"
         DEPENDS ${projectName}-preprocessing "${CMAKE_CURRENT_BINARY_DIR}/${projectName}.cabal"
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}" )
@@ -200,11 +207,22 @@ MACRO ( CABAL_TARGET projectName )
         SET ( ${projectName}_SYSTEMOPT "--unix" )
     ENDIF ( UNIX )
 
+    IF ( ENABLE_HASKELL_PARALLEL_PROFILING )
+        SET ( ${projectName}_PARALLEL_PROFILE_FLAG "--profiling" )
+    ENDIF ( ENABLE_HASKELL_PARALLEL_PROFILING )
+
+    IF ( ${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" )
+        # Tells the binary to search in its own directory for shared libs
+        SET ( ${projectName}_RELEASE_FLAG "--release" )
+    ENDIF ( ${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" )
+
     ADD_CUSTOM_COMMAND ( 
         OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${projectName}.cabal"
         COMMAND "${PYTHON_EXECUTABLE}"
         ARGS "generateCabal.py"
             "${${projectName}_SYSTEMOPT}"
+            "${${projectName}_RELEASE_FLAG}"
+            "${${projectName}_PARALLEL_PROFILE_FLAG}"
             "--extra-libraries=\"${${projectName}_EXTRA_LIBS}\""
             "--extra-lib-dirs=\"${${projectName}_EXTRA_LIB_DIRS}\""
             "${CMAKE_CURRENT_SOURCE_DIR}/package.json"
