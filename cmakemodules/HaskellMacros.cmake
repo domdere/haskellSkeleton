@@ -200,11 +200,17 @@ MACRO ( CABAL_TARGET projectName )
         SET ( ${projectName}_SYSTEMOPT "--unix" )
     ENDIF ( UNIX )
 
+    IF ( ${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" )
+        # Tells the binary to search in its own directory for shared libs
+        SET ( ${projectName}_RELEASE_FLAG "--release" )
+    ENDIF ( ${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo" )
+
     ADD_CUSTOM_COMMAND ( 
         OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${projectName}.cabal"
         COMMAND "${PYTHON_EXECUTABLE}"
         ARGS "generateCabal.py"
             "${${projectName}_SYSTEMOPT}"
+            "${${projectName}_RELEASE_FLAG}"
             "--extra-libraries=\"${${projectName}_EXTRA_LIBS}\""
             "--extra-lib-dirs=\"${${projectName}_EXTRA_LIB_DIRS}\""
             "${CMAKE_CURRENT_SOURCE_DIR}/package.json"

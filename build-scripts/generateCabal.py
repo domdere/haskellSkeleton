@@ -40,6 +40,9 @@ def appSetOpts(parser):
     cabalOptions.add_option('--unix', action='store_true', dest='unixmode', default=False,
         help='Adds additional options etc... for UNIX systems')
 
+    cabalOptions.add_option('--release', action='store_true', dest='release', default=False,
+        help='Adds optimisation options for release builds')
+
     parser.add_option_group(cabalOptions) 
 
     return
@@ -74,6 +77,10 @@ def generateCabalString(
     if options.unixmode:
         logger.info('Adding option to specify binaries relative path as a place to search for shared libraries...')
         ghcOptions += ' ' + unixRPathOpt()
+
+    if options.unixmode:
+        logger.info('Adding optimisation options for release builds...')
+        ghcOptions += ' -O3'
 
     optionStr = '-i%s %s' % (includeDirs, ghcOptions)
 
