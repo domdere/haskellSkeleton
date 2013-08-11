@@ -45,7 +45,7 @@ fromUser username = (Just . fromSnapletOptions) (defaultOptions
 
 sampleOptionDescrs :: [OptDescr (Maybe (Config Snap SnapletOptions))]
 sampleOptionDescrs = 
-    [   Option ['p'] ["dbport"] (ReqArg fromPort "PORT") "port"
+    [   Option [] ["dbport"] (ReqArg fromPort "PORT") "port"
     ,   Option ['u'] ["dbuser"] (ReqArg fromUser "USERNAME") "username"
     ]
 
